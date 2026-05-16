@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query 9 - Doctor Performance History</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="report-page">
+    <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="report-container">
+        <h1 class="report-title">Query 9: Performance History for a Doctor</h1>
+        <div class="search-section">
+            <div class="form-group">
+                <label for="doctorSelect">Select Doctor:</label>
+                <select id="doctorSelect"><option value="">-- Select a Doctor --</option></select>
+            </div>
+            <button class="btn" id="searchBtn">View History</button>
+        </div>
+        <div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+        <div id="results"></div>
+    </div>
+    <footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load doctor list
+    fetch('../api/query9.php').then(r => r.json()).then(data => {
+        const sel = document.getElementById('doctorSelect');
+        (data.doctors || []).forEach(d => {
+            const o = document.createElement('option');
+            o.value = d.doctor_id;
+            o.textContent = `${d.name} (${d.position})`;
+            sel.appendChild(o);
+        });
+    });
+
+    document.getElementById('searchBtn').addEventListener('click', function() {
+        const id = document.getElementById('doctorSelect').value;
+        if (!id) { alert('Please select a doctor.'); return; }
+        showLoading();
+        document.getElementById('results').innerHTML = '';
+        fetch(`../api/query9.php?doctor_id=${id}`).then(r => r.json()).then(data => {
+            hideLoading();
+            if (data.error) { showError(JSON.stringify(data.error), 'results'); return; }
+            if (!data.length) { document.getElementById('results').innerHTML = '<p>No records found.</p>'; return; }
+            const d = data[0];
+            let html = `<div class="info-box">
+                <strong>Doctor:</strong> ${d.doctor_name} &nbsp;|&nbsp;
+                <strong>Current Position:</strong> ${d.current_position} &nbsp;|&nbsp;
+                <strong>Date Joined Team:</strong> ${formatDate(d.date_joined_team)}
+            </div>`;
+
+            // Experience History table
+            html += '<h3 class="sub-heading">Experience History</h3>';
+            html += '<div class="table-actions"><button class="btn export-btn" data-table="t9exp" data-filename="doctor_experience">Export CSV</button></div>';
+            html += '<table id="t9exp" class="data-table"><thead><tr><th>Past Position</th><th>Establishment</th><th>From</th><th>To</th></tr></thead><tbody>';
+            const seen = new Set();
+            data.forEach(r => {
+                const k = r.past_position + r.establishment + r.from_date;
+                if (r.past_position && !seen.has(k)) {
+                    seen.add(k);
+                    html += `<tr><td>${r.past_position}</td><td>${r.establishment}</td><td>${formatDate(r.from_date)}</td><td>${r.to_date ? formatDate(r.to_date) : 'Present'}</td></tr>`;
+                }
+            });
+            html += '</tbody></table>';
+
+            // Performance Grades table
+            html += '<h3 class="sub-heading">Performance Grades</h3>';
+            html += '<div class="table-actions"><button class="btn export-btn" data-table="t9grade" data-filename="doctor_grades">Export CSV</button></div>';
+            html += '<table id="t9grade" class="data-table"><thead><tr><th>Date</th><th>Grade</th><th>Consultant ID</th></tr></thead><tbody>';
+            const seen2 = new Set();
+            data.forEach(r => {
+                const k = r.progress_date + r.grade;
+                if (r.progress_date && !seen2.has(k)) {
+                    seen2.add(k);
+                    html += `<tr><td>${formatDate(r.progress_date)}</td><td>${r.grade}</td><td>${r.consultant_id}</td></tr>`;
+                }
+            });
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        }).catch(e => { hideLoading(); showError(e.message, 'results'); });
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query 2 - Ward Records</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="report-page">
+    <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="report-container">
+        <h1 class="report-title">Query 2: Ward Records — Sisters, Care Units & Patients</h1>
+        <div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+        <div id="results"></div>
+    </div>
+    <footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital | CS204 Database Systems</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
+    fetch('../api/query2.php').then(r => r.json()).then(resp => {
+        hideLoading();
+        if (resp.error) { showError(JSON.stringify(resp.error), 'results'); return; }
+
+        const wards    = resp.wards    || [];
+        const patients = resp.patients || [];
+
+        if (!wards.length) { document.getElementById('results').innerHTML = '<p>No data found.</p>'; return; }
+
+        // Group patients by ward_id for quick lookup
+        const patientsByWard = {};
+        patients.forEach(p => {
+            if (!patientsByWard[p.ward_id]) patientsByWard[p.ward_id] = [];
+            patientsByWard[p.ward_id].push(p);
+        });
+
+        // De-duplicate wards (same ward appears once per care unit from JOIN)
+        const seenWards = {};
+        const wardList  = [];
+        wards.forEach(r => {
+            if (!seenWards[r.ward_id]) {
+                seenWards[r.ward_id] = r;
+                wardList.push(r);
+            }
+        });
+
+        let html = '<div class="table-actions"><button class="btn export-btn" data-table="t2summary" data-filename="ward_summary">Export Summary CSV</button></div>';
+
+        // ── Ward Summary Table ────────────────────────────────
+        html += '<h3 class="sub-heading">Ward Summary</h3>';
+        html += '<table id="t2summary" class="data-table"><thead><tr>';
+        html += '<th>Ward Name</th><th>Specialty</th><th>Day Sister</th><th>Night Sister</th>';
+        html += '<th>Care Unit</th><th>Charge Nurse</th><th>Staff Nurses</th><th>Non-Reg Nurses</th>';
+        html += '</tr></thead><tbody>';
+
+        wardList.forEach(w => {
+            // Collect all care units for this ward
+            const careUnits = wards.filter(r => r.ward_id === w.ward_id);
+            careUnits.forEach((cu, i) => {
+                html += '<tr>';
+                if (i === 0) {
+                    // Ward-level cells span all care unit rows
+                    const rs = careUnits.length;
+                    html += `<td rowspan="${rs}">${w.ward_name}</td>`;
+                    html += `<td rowspan="${rs}">${w.specialty}</td>`;
+                    html += `<td rowspan="${rs}">${w.day_sister   || 'N/A'}</td>`;
+                    html += `<td rowspan="${rs}">${w.night_sister || 'N/A'}</td>`;
+                    html += `<td>${cu.care_unit_no || 'N/A'}</td>`;
+                    html += `<td>${cu.charge_nurse || 'N/A'}</td>`;
+                    html += `<td rowspan="${rs}">${w.staff_nurse_count}</td>`;
+                    html += `<td rowspan="${rs}">${w.non_registered_count}</td>`;
+                } else {
+                    html += `<td>${cu.care_unit_no || 'N/A'}</td>`;
+                    html += `<td>${cu.charge_nurse || 'N/A'}</td>`;
+                }
+                html += '</tr>';
+            });
+        });
+        html += '</tbody></table>';
+
+        // ── Per-Ward Patient Tables (as per spec Ward Record form) ──
+        html += '<h3 class="sub-heading" style="margin-top:32px">Patient Information by Ward</h3>';
+        html += '<div class="table-actions"><button class="btn export-btn" data-table="t2patients" data-filename="ward_patients">Export Patients CSV</button></div>';
+        html += '<table id="t2patients" class="data-table"><thead><tr>';
+        html += '<th>Ward</th><th>Patient No</th><th>Patient Name</th><th>Care Unit</th><th>Bed No</th><th>Consultant ID</th><th>Date Admitted</th>';
+        html += '</tr></thead><tbody>';
+
+        wardList.forEach(w => {
+            const wPatients = patientsByWard[w.ward_id] || [];
+            if (wPatients.length === 0) {
+                html += `<tr><td>${w.ward_name}</td><td colspan="6" style="color:#94a3b8">No patients currently admitted</td></tr>`;
+            } else {
+                wPatients.forEach((p, i) => {
+                    html += '<tr>';
+                    html += i === 0 ? `<td rowspan="${wPatients.length}">${w.ward_name}</td>` : '';
+                    html += `<td>${p.patient_no}</td><td>${p.patient_name}</td>`;
+                    html += `<td>${p.care_unit || 'N/A'}</td><td>${p.bed_no || 'N/A'}</td>`;
+                    html += `<td>${p.consultant_id || 'N/A'}</td><td>${formatDate(p.date_admitted)}</td>`;
+                    html += '</tr>';
+                });
+            }
+        });
+        html += '</tbody></table>';
+
+        document.getElementById('results').innerHTML = html;
+
+    }).catch(e => { hideLoading(); showError(e.message, 'results'); });
+});
+</script>
+</body>
+</html>

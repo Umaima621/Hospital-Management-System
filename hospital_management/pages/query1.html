@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query 1 - Consultants & Teams</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="container">
+    <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="report-container">
+        <h1 class="report-title">Query 1: Consultants and Their Team Doctors</h1>
+        <div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+        <div id="results"></div>
+    </div>
+    <footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
+    fetch('../api/query1.php')
+        .then(r => r.json())
+        .then(data => {
+            hideLoading();
+            if (data.error) { showError(data.error, 'results'); return; }
+            if (!data.length) { document.getElementById('results').innerHTML = '<p>No data found.</p>'; return; }
+            let html = '<button class="btn export-btn" data-table="t1" data-filename="consultants_teams">Export CSV</button>';
+            html += '<table id="t1"><thead><tr><th>Consultant ID</th><th>Specialty</th><th>Doctor ID</th><th>Doctor Name</th><th>Position</th><th>Date Joined Team</th></tr></thead><tbody>';
+            data.forEach(r => {
+                html += `<tr><td>${r.consultant_id}</td><td>${r.specialty}</td><td>${r.doctor_id}</td><td>${r.doctor_name}</td><td>${r.doctor_position}</td><td>${r.date_joined_team||'N/A'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        })
+        .catch(e => { hideLoading(); showError(e.message, 'results'); });
+});
+</script>
+</body>
+</html>

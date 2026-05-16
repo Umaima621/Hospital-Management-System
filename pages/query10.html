@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query 10 - Full Patient Medical Details</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="report-page">
+    <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="report-container">
+        <h1 class="report-title">Query 10: Full Medical Details for a Patient</h1>
+        <div class="search-section">
+            <div class="form-group">
+                <label for="patientSelect">Select Patient:</label>
+                <select id="patientSelect"><option value="">-- Select a Patient --</option></select>
+            </div>
+            <button class="btn" id="searchBtn">View Details</button>
+        </div>
+        <div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+        <div id="results"></div>
+    </div>
+    <footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital | CS204 Database Systems</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('../api/query10.php').then(r => r.json()).then(data => {
+        const sel = document.getElementById('patientSelect');
+        (data.patients || []).forEach(p => {
+            const o = document.createElement('option');
+            o.value = p.patient_no;
+            o.textContent = `${p.name} (#${p.patient_no})`;
+            sel.appendChild(o);
+        });
+    });
+
+    document.getElementById('searchBtn').addEventListener('click', function() {
+        const id = document.getElementById('patientSelect').value;
+        if (!id) { alert('Please select a patient.'); return; }
+        showLoading();
+        document.getElementById('results').innerHTML = '';
+        fetch(`../api/query10.php?patient_no=${id}`).then(r => r.json()).then(data => {
+            hideLoading();
+            if (data.error) { showError(JSON.stringify(data.error), 'results'); return; }
+            if (!data.length) { document.getElementById('results').innerHTML = '<p>No records found.</p>'; return; }
+            const p = data[0];
+            const overseasText = (p.overseas == 1 || p.overseas === true) ? 'Yes' : 'No';
+
+            // ── Patient Record header (matches spec form layout) ──
+            let html = `
+            <div class="patient-record-form">
+                <div class="prf-header">IVOR PAINE MEMORIAL HOSPITAL — PATIENT RECORD</div>
+                <div class="prf-row">
+                    <div class="prf-field"><span class="prf-label">Patient No:</span> ${p.patient_no}</div>
+                    <div class="prf-field"><span class="prf-label">Doctor No:</span> ${p.doctor_no}</div>
+                </div>
+                <div class="prf-row">
+                    <div class="prf-field"><span class="prf-label">Patient Name:</span> ${p.patient_name}</div>
+                    <div class="prf-field"><span class="prf-label">Doctor Name:</span> ${p.assigned_doctor} (${p.doctor_position})</div>
+                </div>
+                <div class="prf-row">
+                    <div class="prf-field"><span class="prf-label">Date of Birth:</span> ${formatDate(p.dob)}</div>
+                    <div class="prf-field"><span class="prf-label">Consultant No:</span> ${p.consultant_no}</div>
+                </div>
+                <div class="prf-row">
+                    <div class="prf-field"><span class="prf-label">Date Admitted:</span> ${formatDate(p.date_admitted)}</div>
+                    <div class="prf-field"><span class="prf-label">Consultant Specialty:</span> ${p.consultant_specialty}</div>
+                </div>
+                <div class="prf-row">
+                    <div class="prf-field"><span class="prf-label">Bed No:</span> ${p.bed_no}</div>
+                    <div class="prf-field"><span class="prf-label">Overseas Patient:</span> ${overseasText}</div>
+                </div>
+                <div class="prf-row">
+                    <div class="prf-field"><span class="prf-label">Ward:</span> ${p.ward_name}</div>
+                    <div class="prf-field"><span class="prf-label">Specialty:</span> ${p.specialty}</div>
+                </div>
+                <div class="prf-row">
+                    <div class="prf-field"><span class="prf-label">Care Unit:</span> ${p.care_unit}</div>
+                    <div class="prf-field"><span class="prf-label">Charge Nurse:</span> ${p.charge_nurse}</div>
+                </div>
+            </div>`;
+
+            // ── Medical History table (matches spec form) ──
+            html += '<h3 class="sub-heading">Medical History</h3>';
+            html += '<div class="table-actions"><button class="btn export-btn" data-table="t10" data-filename="patient_record">Export CSV</button></div>';
+            html += '<table id="t10" class="data-table"><thead><tr>';
+            html += '<th>Complaint</th><th>Treatment</th><th>Treating Doctor</th><th>Date Started</th><th>Date Ended</th>';
+            html += '</tr></thead><tbody>';
+
+            let hasHistory = false;
+            data.forEach(r => {
+                if (r.complaint) {
+                    hasHistory = true;
+                    html += `<tr>
+                        <td>${r.complaint}</td>
+                        <td>${r.treatment || 'N/A'}</td>
+                        <td>${r.treating_doctor || 'N/A'}</td>
+                        <td>${formatDate(r.date_started)}</td>
+                        <td>${r.date_ended ? formatDate(r.date_ended) : 'Ongoing'}</td>
+                    </tr>`;
+                }
+            });
+
+            if (!hasHistory) html += '<tr><td colspan="5" style="color:#94a3b8;text-align:center">No treatment records found</td></tr>';
+            html += '</tbody></table>';
+
+            document.getElementById('results').innerHTML = html;
+        }).catch(e => { hideLoading(); showError(e.message, 'results'); });
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Query 2 - Ward Records</title><link rel="stylesheet" href="../css/style.css"></head>
+<body><div class="container">
+<a href="../index.html" class="back-btn">← Back to Dashboard</a>
+<div class="report-container">
+<h1 class="report-title">Query 2: Wards with Sisters, Care Units & Staff Nurses</h1>
+<div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+<div id="results"></div>
+</div>
+<footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
+    fetch('../api/query2.php').then(r=>r.json()).then(data=>{
+        hideLoading();
+        if(data.error){showError(data.error,'results');return;}
+        let html='<button class="btn export-btn" data-table="t2" data-filename="ward_records">Export CSV</button>';
+        html+='<table id="t2"><thead><tr><th>Ward Name</th><th>Specialty</th><th>Day Sister</th><th>Night Sister</th><th>Care Unit No</th><th>Charge Nurse</th></tr></thead><tbody>';
+        data.forEach(r=>{html+=`<tr><td>${r.ward_name}</td><td>${r.specialty}</td><td>${r.day_sister||'N/A'}</td><td>${r.night_sister||'N/A'}</td><td>${r.care_unit_no||'N/A'}</td><td>${r.charge_nurse||'N/A'}</td></tr>`;});
+        html+='</tbody></table>';
+        document.getElementById('results').innerHTML=html;
+    }).catch(e=>{hideLoading();showError(e.message,'results');});
+});
+</script></body></html>

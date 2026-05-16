@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Query 7 - Multiple Complaints Patients</title><link rel="stylesheet" href="../css/style.css"></head>
+<body><div class="container">
+<a href="../index.html" class="back-btn">← Back to Dashboard</a>
+<div class="report-container">
+<h1 class="report-title">Query 7: Patients with More Than One Complaint</h1>
+<div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+<div id="results"></div>
+</div>
+<footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
+    fetch('../api/query7.php').then(r=>r.json()).then(data=>{
+        hideLoading();
+        if(data.error){showError(data.error,'results');return;}
+        if(!data.length){document.getElementById('results').innerHTML='<p>No patients found with multiple complaints.</p>';return;}
+        let html='<button class="btn export-btn" data-table="t7" data-filename="multiple_complaint_patients">Export CSV</button>';
+        html+='<table id="t7"><thead><tr><th>Patient No</th><th>Patient Name</th><th>Complaint</th><th>Treatment</th><th>Date Started</th><th>Date Ended</th></tr></thead><tbody>';
+        data.forEach(r=>{html+=`<tr><td>${r.patient_no}</td><td>${r.patient_name}</td><td>${r.complaint}</td><td>${r.treatment}</td><td>${r.date_started||'N/A'}</td><td>${r.date_ended||'Ongoing'}</td></tr>`;});
+        html+='</tbody></table>';
+        document.getElementById('results').innerHTML=html;
+    }).catch(e=>{hideLoading();showError(e.message,'results');});
+});
+</script></body></html>

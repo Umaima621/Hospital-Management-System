@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Query 8 - Patients Grouped by Treatment</title><link rel="stylesheet" href="../css/style.css"></head>
+<body><div class="container">
+<a href="../index.html" class="back-btn">← Back to Dashboard</a>
+<div class="report-container">
+<h1 class="report-title">Query 8: Patients Grouped by Treatment within Complaint</h1>
+<div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+<div id="results"></div>
+</div>
+<footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
+    fetch('../api/query8.php').then(r=>r.json()).then(data=>{
+        hideLoading();
+        if(data.error){showError(data.error,'results');return;}
+        let html='<button class="btn export-btn" data-table="t8" data-filename="patients_by_treatment">Export CSV</button>';
+        html+='<table id="t8"><thead><tr><th>Complaint</th><th>Treatment</th><th>Patient No</th><th>Patient Name</th><th>Date Started</th><th>Date Ended</th></tr></thead><tbody>';
+        data.forEach(r=>{html+=`<tr><td>${r.complaint}</td><td>${r.treatment}</td><td>${r.patient_no}</td><td>${r.patient_name}</td><td>${r.date_started||'N/A'}</td><td>${r.date_ended||'Ongoing'}</td></tr>`;});
+        html+='</tbody></table>';
+        document.getElementById('results').innerHTML=html;
+    }).catch(e=>{hideLoading();showError(e.message,'results');});
+});
+</script></body></html>

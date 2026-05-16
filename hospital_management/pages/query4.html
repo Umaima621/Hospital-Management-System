@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Query 4 - Junior Housemen & Patients</title><link rel="stylesheet" href="../css/style.css"></head>
+<body><div class="container">
+<a href="../index.html" class="back-btn">← Back to Dashboard</a>
+<div class="report-container">
+<h1 class="report-title">Query 4: Junior Housemen, Their Patients & Care-Unit Nurse</h1>
+<div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+<div id="results"></div>
+</div>
+<footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
+    fetch('../api/query4.php').then(r=>r.json()).then(data=>{
+        hideLoading();
+        if(data.error){showError(data.error,'results');return;}
+        if(!data.length){document.getElementById('results').innerHTML='<p>No junior housemen found in the database.</p>';return;}
+        let html='<button class="btn export-btn" data-table="t4" data-filename="junior_housemen">Export CSV</button>';
+        html+='<table id="t4"><thead><tr><th>Doctor ID</th><th>Junior Houseman</th><th>Position</th><th>Patient No</th><th>Patient Name</th><th>Care Unit</th><th>Staff Nurse</th></tr></thead><tbody>';
+        data.forEach(r=>{html+=`<tr><td>${r.doctor_id}</td><td>${r.junior_houseman}</td><td>${r.position}</td><td>${r.patient_no}</td><td>${r.patient_name}</td><td>${r.care_unit}</td><td>${r.staff_nurse}</td></tr>`;});
+        html+='</tbody></table>';
+        document.getElementById('results').innerHTML=html;
+    }).catch(e=>{hideLoading();showError(e.message,'results');});
+});
+</script></body></html>

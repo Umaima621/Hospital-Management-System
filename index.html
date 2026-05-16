@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVOR Hospital Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <span class="nav-brand">🏥 IVOR Hospital</span>
+            <ul>
+                <li><a href="#" class="nav-link active" data-target="top">Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-target="reports-section">Reports</a></li>
+                <li><a href="#" class="nav-link" data-target="queries-section">Queries</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="page-wrap" id="top">
+
+        <header class="header">
+            <div class="header-left">
+                <h1>IVOR Paine Memorial Hospital</h1>
+                <p class="header-sub">Database Management System &mdash; CS204</p>
+            </div>
+            <div class="header-right">
+                <p>Computer Science Department</p>
+                <p>NUCES, Islamabad</p>
+            </div>
+        </header>
+
+        <div class="hero-strip">
+            <p>Select a report or query from the sections below</p>
+            <div class="hero-stats">
+                <span>12 Reports</span>
+                <span>30 Patients</span>
+                <span>10 Wards</span>
+                <span>10 Consultants</span>
+            </div>
+        </div>
+
+        <main>
+
+            <section id="reports-section">
+                <div class="section-header">
+                    <div class="section-tag">Reports</div>
+                    <h2>Hospital Reports</h2>
+                    <p>Structured lists covering staff, wards, patients and treatments</p>
+                </div>
+                <div class="query-grid">
+                    <a href="pages/query1.html" class="query-card">
+                        <div class="card-num">Q1</div>
+                        <div class="card-icon">👨‍⚕️</div>
+                        <h3>Consultants &amp; Teams</h3>
+                        <p>List of consultants and the doctors in their team</p>
+                    </a>
+                    <a href="pages/query2.html" class="query-card">
+                        <div class="card-num">Q2</div>
+                        <div class="card-icon">🏥</div>
+                        <h3>Ward Records</h3>
+                        <p>Wards with sisters, care units &amp; nurses in charge</p>
+                    </a>
+                    <a href="pages/query3.html" class="query-card">
+                        <div class="card-num">Q3</div>
+                        <div class="card-icon">📋</div>
+                        <h3>Patient Treatments</h3>
+                        <p>Patients with complaints, treatments &amp; dates</p>
+                    </a>
+                    <a href="pages/query4.html" class="query-card">
+                        <div class="card-num">Q4</div>
+                        <div class="card-icon">🩺</div>
+                        <h3>Junior Housemen</h3>
+                        <p>Junior housemen, their patients &amp; care-unit nurses</p>
+                    </a>
+                    <a href="pages/query5.html" class="query-card">
+                        <div class="card-num">Q5</div>
+                        <div class="card-icon">⭐</div>
+                        <h3>Unique Specialties</h3>
+                        <p>Consultants holding a specialty no one else has</p>
+                    </a>
+                    <a href="pages/query6.html" class="query-card">
+                        <div class="card-num">Q6</div>
+                        <div class="card-icon">💊</div>
+                        <h3>Complaints &amp; Experience</h3>
+                        <p>Complaints, treatments &amp; doctor experience history</p>
+                    </a>
+                </div>
+            </section>
+
+            <section id="queries-section">
+                <div class="section-header">
+                    <div class="section-tag">Queries</div>
+                    <h2>Search Queries</h2>
+                    <p>Filtered and parameterised queries for specific lookups</p>
+                </div>
+                <div class="query-grid">
+                    <a href="pages/query7.html" class="query-card">
+                        <div class="card-num">Q7</div>
+                        <div class="card-icon">🔄</div>
+                        <h3>Multiple Complaints</h3>
+                        <p>Patients with more than one complaint &amp; their treatments</p>
+                    </a>
+                    <a href="pages/query8.html" class="query-card">
+                        <div class="card-num">Q8</div>
+                        <div class="card-icon">📊</div>
+                        <h3>Grouped by Treatment</h3>
+                        <p>Patients grouped by treatment within complaint</p>
+                    </a>
+                    <a href="pages/query9.html" class="query-card">
+                        <div class="card-num">Q9</div>
+                        <div class="card-icon">📈</div>
+                        <h3>Doctor Performance</h3>
+                        <p>Full performance history for a selected doctor</p>
+                    </a>
+                    <a href="pages/query10.html" class="query-card">
+                        <div class="card-num">Q10</div>
+                        <div class="card-icon">📄</div>
+                        <h3>Patient Details</h3>
+                        <p>Full medical record for a selected patient</p>
+                    </a>
+                    <a href="pages/query11.html" class="query-card">
+                        <div class="card-num">Q11</div>
+                        <div class="card-icon">📅</div>
+                        <h3>Treatments by Date</h3>
+                        <p>Treatments for a complaint between two given dates</p>
+                    </a>
+                    <a href="pages/query12.html" class="query-card">
+                        <div class="card-num">Q12</div>
+                        <div class="card-icon">👥</div>
+                        <h3>Staff Positions</h3>
+                        <p>All positions held by staff with headcount per role</p>
+                    </a>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 IVOR Paine Memorial Hospital &nbsp;|&nbsp; CS204 Database Systems &nbsp;|&nbsp; NUCES Islamabad</p>
+        </footer>
+
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                const target = this.getAttribute('data-target');
+                const el = document.getElementById(target);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            const sections = ['queries-section', 'reports-section', 'top'];
+            let current = 'top';
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && window.scrollY >= el.offsetTop - 100) current = id;
+            });
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.toggle('active', l.getAttribute('data-target') === current);
+            });
+        });
+    </script>
+</body>
+</html>

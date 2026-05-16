@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Query 10 - Full Patient Medical Details</title><link rel="stylesheet" href="../css/style.css"></head>
+<body><div class="container">
+<a href="../index.html" class="back-btn">← Back to Dashboard</a>
+<div class="report-container">
+<h1 class="report-title">Query 10: Full Medical Details for a Patient</h1>
+<div class="search-section">
+    <label for="patientSelect">Select Patient:</label>
+    <select id="patientSelect"><option value="">-- Select a Patient --</option></select>
+    <button class="btn" id="searchBtn">View Details</button>
+</div>
+<div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+<div id="results"></div>
+</div>
+<footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('../api/query10.php').then(r=>r.json()).then(data=>{
+        const sel=document.getElementById('patientSelect');
+        (data.patients||[]).forEach(p=>{
+            const o=document.createElement('option'); o.value=p.patient_no; o.textContent=`${p.name} (#${p.patient_no})`; sel.appendChild(o);
+        });
+    });
+    document.getElementById('searchBtn').addEventListener('click', function(){
+        const id=document.getElementById('patientSelect').value;
+        if(!id){alert('Please select a patient.');return;}
+        showLoading(); document.getElementById('results').innerHTML='';
+        fetch(`../api/query10.php?patient_no=${id}`).then(r=>r.json()).then(data=>{
+            hideLoading();
+            if(!data.length){document.getElementById('results').innerHTML='<p>No records found.</p>';return;}
+            const p=data[0];
+            let html=`<div class="info-box">
+                <strong>Patient:</strong> ${p.patient_name} &nbsp;|&nbsp;
+                <strong>DOB:</strong> ${p.dob} &nbsp;|&nbsp;
+                <strong>Admitted:</strong> ${p.date_admitted} &nbsp;|&nbsp;
+                <strong>Bed:</strong> ${p.bed_no} &nbsp;|&nbsp;
+                <strong>Overseas:</strong> ${p.overseas?'Yes':'No'}<br>
+                <strong>Ward:</strong> ${p.ward_name} &nbsp;|&nbsp;
+                <strong>Specialty:</strong> ${p.specialty} &nbsp;|&nbsp;
+                <strong>Care Unit:</strong> ${p.care_unit} &nbsp;|&nbsp;
+                <strong>Charge Nurse:</strong> ${p.charge_nurse}<br>
+                <strong>Assigned Doctor:</strong> ${p.assigned_doctor} (${p.doctor_position}) &nbsp;|&nbsp;
+                <strong>Consultant Specialty:</strong> ${p.consultant_specialty}
+            </div>`;
+            html+='<h3>Treatment History</h3><table><thead><tr><th>Complaint</th><th>Treatment</th><th>Treating Doctor</th><th>Date Started</th><th>Date Ended</th></tr></thead><tbody>';
+            data.forEach(r=>{
+                if(r.complaint) html+=`<tr><td>${r.complaint}</td><td>${r.treatment||'N/A'}</td><td>${r.treating_doctor||'N/A'}</td><td>${r.date_started||'N/A'}</td><td>${r.date_ended||'Ongoing'}</td></tr>`;
+            });
+            html+='</tbody></table>';
+            document.getElementById('results').innerHTML=html;
+        }).catch(e=>{hideLoading();showError(e.message,'results');});
+    });
+});
+</script></body></html>

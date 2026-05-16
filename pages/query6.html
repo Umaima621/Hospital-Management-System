@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query 6 - Complaints, Treatments & Doctor Experience</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="report-page">
+    <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="report-container">
+        <h1 class="report-title">Query 6: Complaints, Treatments & Doctor Experience History</h1>
+        <div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+        <div id="results"></div>
+    </div>
+    <footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
+    fetch('../api/query6.php').then(r => r.json()).then(data => {
+        hideLoading();
+        if (data.error) { showError(JSON.stringify(data.error), 'results'); return; }
+        if (!data.length) { document.getElementById('results').innerHTML = '<p>No data found.</p>'; return; }
+        let html = '<div class="table-actions"><button class="btn export-btn" data-table="t6" data-filename="complaints_treatments_experience">Export CSV</button></div>';
+        html += '<table id="t6" class="data-table"><thead><tr><th>Complaint</th><th>Treatment</th><th>Doctor</th><th>Current Position</th><th>Past Position</th><th>Establishment</th><th>From</th><th>To</th></tr></thead><tbody>';
+        data.forEach(r => {
+            html += `<tr><td>${r.complaint}</td><td>${r.treatment}</td><td>${r.doctor_name}</td><td>${r.current_position}</td><td>${r.past_position || 'N/A'}</td><td>${r.establishment || 'N/A'}</td><td>${formatDate(r.from_date)}</td><td>${r.to_date ? formatDate(r.to_date) : 'Present'}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('results').innerHTML = html;
+    }).catch(e => { hideLoading(); showError(e.message, 'results'); });
+});
+</script>
+</body>
+</html>

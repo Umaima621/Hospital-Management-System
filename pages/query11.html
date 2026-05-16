@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query 11 - Treatments Between Dates</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="report-page">
+    <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="report-container">
+        <h1 class="report-title">Query 11: Treatments for a Complaint Between Two Dates</h1>
+        <div class="search-section">
+            <div class="form-group">
+                <label for="complaintSelect">Complaint:</label>
+                <select id="complaintSelect"><option value="">-- Select a Complaint --</option></select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="dateFrom">From Date:</label>
+                    <input type="date" id="dateFrom">
+                </div>
+                <div class="form-group">
+                    <label for="dateTo">To Date:</label>
+                    <input type="date" id="dateTo">
+                </div>
+            </div>
+            <button class="btn" id="searchBtn">Search</button>
+        </div>
+        <div id="loading" class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>
+        <div id="results"></div>
+    </div>
+    <footer class="footer"><p>&copy; 2025 IVOR Paine Memorial Hospital</p></footer>
+</div>
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('../api/query11.php').then(r => r.json()).then(data => {
+        const sel = document.getElementById('complaintSelect');
+        (data.complaints || []).forEach(c => {
+            const o = document.createElement('option');
+            o.value = c.complaint_code;
+            o.textContent = c.description;
+            sel.appendChild(o);
+        });
+    });
+
+    document.getElementById('searchBtn').addEventListener('click', function() {
+        const cc = document.getElementById('complaintSelect').value;
+        const df = document.getElementById('dateFrom').value;
+        const dt = document.getElementById('dateTo').value;
+        if (!cc || !df || !dt) { alert('Please fill in all fields.'); return; }
+        showLoading();
+        document.getElementById('results').innerHTML = '';
+        fetch(`../api/query11.php?complaint_code=${cc}&date_from=${df}&date_to=${dt}`).then(r => r.json()).then(data => {
+            hideLoading();
+            if (data.error) { showError(JSON.stringify(data.error), 'results'); return; }
+            if (!data.length) { document.getElementById('results').innerHTML = '<p>No treatments found for the selected criteria.</p>'; return; }
+            let html = '<div class="table-actions"><button class="btn export-btn" data-table="t11" data-filename="treatments_by_date">Export CSV</button></div>';
+            html += '<table id="t11" class="data-table"><thead><tr><th>Complaint</th><th>Treatment</th><th>Patient</th><th>Doctor</th><th>Date Started</th><th>Date Ended</th></tr></thead><tbody>';
+            data.forEach(r => {
+                html += `<tr><td>${r.complaint}</td><td>${r.treatment}</td><td>${r.patient_name}</td><td>${r.doctor_name}</td><td>${formatDate(r.date_started)}</td><td>${r.date_ended ? formatDate(r.date_ended) : 'Ongoing'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        }).catch(e => { hideLoading(); showError(e.message, 'results'); });
+    });
+});
+</script>
+</body>
+</html>
